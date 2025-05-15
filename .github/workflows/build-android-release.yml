@@ -5,6 +5,9 @@ on:
     tags:
       - '*'
 
+permissions:
+  contents: write
+
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
@@ -43,15 +46,21 @@ jobs:
         chmod +x build_all.sh
         ./build_all.sh
 
+    - name: List build artifacts
+      run: |
+        pwd
+        ls -la
+        ls -la ffmpeg_android_*.tar.gz || true
+
     - name: Create GitHub Release and Upload Assets
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ steps.get_version.outputs.version }}
         name: ffmpeg ${{ steps.get_version.outputs.version }}
         files: |
-          ffmpeg_android_aarch64.tar.gz
-          ffmpeg_android_arm.tar.gz
-          ffmpeg_android_x86.tar.gz
-          ffmpeg_android_x86_64.tar.gz
+          ./ffmpeg_android_aarch64.tar.gz
+          ./ffmpeg_android_arm.tar.gz
+          ./ffmpeg_android_x86.tar.gz
+          ./ffmpeg_android_x86_64.tar.gz
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

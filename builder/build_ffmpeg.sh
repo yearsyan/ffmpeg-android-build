@@ -11,10 +11,11 @@ set -euo pipefail
 #   --enable-shared      Build shared libraries
 #   --enable-merged-shared  Link all static libraries into a single shared library
 #   --enable-dynamic-program  Build FFmpeg executable with dynamic linking
+#   --show-error        Show detailed error output when build fails
 # =============================================================================
 
 if [[ "$*" == *"--help"* || "$*" == *"-h"* ]]; then
-  echo "Usage: $0 [--arch=ARCH] [--enable-shared] [--enable-merged-shared] [--enable-dynamic-program]"
+  echo "Usage: $0 [--arch=ARCH] [--enable-shared] [--enable-merged-shared] [--enable-dynamic-program] [--show-error]"
   echo "Default architecture is aarch64 (arm64-v8a)."
   echo "Supported architectures: aarch64, armv7a, x86, x86_64."
   echo "Options:"
@@ -23,6 +24,7 @@ if [[ "$*" == *"--help"* || "$*" == *"-h"* ]]; then
   echo "                          This is distinct from '--enable-shared' as it produces one merged shared library."
   echo "  --enable-dynamic-program: Build the FFmpeg executable with dynamic linking."
   echo "                            Implies '--enable-merged-shared', and the resulting executable will depend on the merged shared library."
+  echo "  --show-error: Show detailed error output when build fails. Without this option, only basic error messages are shown."
   exit 0
 fi
 
@@ -189,10 +191,24 @@ PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig" \
 ./configure "${COMMON_CFG[@]}"
 
 echo "=== Start compiling (parallel $CPU_COUNT) ==="
-make -j"$CPU_COUNT"
+if [[ "$*" == *"--show-error"* ]]; then
+  make -j"$CPU_COUNT" || exit 1
+else
+  make -j"$CPU_COUNT" > /dev/null 2>&1 || {
+    echo "Compilation failed. Use --show-error to see detailed output."
+    exit 1
+  }
+fi
 
 echo "=== Install to $PREFIX ==="
-make install
+if [[ "$*" == *"--show-error"* ]]; then
+  make install || exit 1
+else
+  make install > /dev/null 2>&1 || {
+    echo "Installation failed. Use --show-error to see detailed output."
+    exit 1
+  }
+fi
 
 echo "Static libraries (*.a) and headers have been installed to: $PREFIX"
 
