@@ -24,13 +24,18 @@ jobs:
       with:
         ndk-version: '29.0.13113456'
 
+    - name: Set up environment variables
+      run: |
+        echo "ANDROID_NDK=$ANDROID_NDK_HOME" >> $GITHUB_ENV
+        echo "$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin" >> $GITHUB_PATH
+        echo "$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/bin" >> $GITHUB_PATH
+
     - name: Get version from tag
       id: get_version
       run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
     - name: Build FFmpeg for all architectures
       run: |
-        export ANDROID_NDK=$ANDROID_NDK_HOME
         cd builder
         chmod +x build_all.sh
         ./build_all.sh
