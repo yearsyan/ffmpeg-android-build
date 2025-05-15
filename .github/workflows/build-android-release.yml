@@ -19,12 +19,6 @@ jobs:
         submodules: recursive
         fetch-depth: 0
 
-    - name: Set up JDK
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: '11'
-
     - name: Setup Android NDK
       uses: nttld/setup-ndk@v1
       id: setup-ndk
@@ -42,9 +36,8 @@ jobs:
 
     - name: Build FFmpeg for all architectures
       run: |
-        cd builder
-        chmod +x build_all.sh
-        ./build_all.sh
+        chmod +x builder/build_all.sh
+        builder/build_all.sh
 
     - name: List build artifacts
       run: |
