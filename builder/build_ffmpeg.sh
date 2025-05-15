@@ -8,6 +8,19 @@ set -euo pipefail
 # Usage: ./build_ffmpeg.sh [ARCH]  (default aarch64)
 # =============================================================================
 
+if [[ "$*" == *"--help"* || "$*" == *"-h"* ]]; then
+  echo "Usage: $0 [--arch=ARCH] [--enable-shared] [--enable-merged-shared] [--enable-dynamic-program]"
+  echo "Default architecture is aarch64 (arm64-v8a)."
+  echo "Supported architectures: aarch64, armv7a, x86, x86_64."
+  echo "Options:"
+  echo "  --enable-shared: Build shared libraries. This corresponds to FFmpeg's '--enable-shared' option."
+  echo "  --enable-merged-shared: Link all static libraries into a single shared library 'libffmpeg.so'."
+  echo "                          This is distinct from '--enable-shared' as it produces one merged shared library."
+  echo "  --enable-dynamic-program: Build the FFmpeg executable with dynamic linking."
+  echo "                            Implies '--enable-merged-shared', and the resulting executable will depend on the merged shared library."
+  exit 0
+fi
+
 # Required: ANDROID_NDK environment variable must point to the NDK root directory
 NDK_ROOT="${ANDROID_NDK:-}"
 if [[ -z "$NDK_ROOT" ]]; then
@@ -20,7 +33,14 @@ API_LEVEL=21                      # Minimum supported API level ≥ 21
 CPU_COUNT=$(sysctl -n hw.ncpu || nproc)
 
 # Read architecture from the script's first argument, default is aarch64
-ARCH="${1:-aarch64}"
+ARCH="aarch64"
+for arg in "$@"; do
+  case $arg in
+    --arch=*)
+      ARCH="${arg#*=}"
+      ;;
+  esac
+done
 
 # Set FFmpeg configure's --arch, --cpu, and NDK triple according to ARCH
 case "$ARCH" in
@@ -50,7 +70,7 @@ case "$ARCH" in
     ;;
 esac
 
-PREFIX="$(pwd)/ffmpeg_android_${TARGET_ARCH}_build"
+PREFIX="$(pwd)/ffmpeg_android_${TARGET_ARCH}"
 
 # Automatically detect host prebuilt directory (macOS / Linux, Intel / Apple Silicon)
 HOST_OS=$(uname | tr '[:upper:]' '[:lower:]')
@@ -92,7 +112,7 @@ cd "$(dirname "$0")/../ffmpeg"
 
 if [[ -f Makefile ]]; then
   echo "INFO: Detected Makefile, running make distclean..."
-  make distclean
+  make distclean >> /dev/null || true
 fi
 
 # Export cross-compilation toolchain
@@ -121,10 +141,19 @@ COMMON_CFG=(
   --strip="$STRIP"
   --enable-cross-compile
   --enable-pic
-  --disable-shared
   --enable-static
   --disable-doc
   --disable-debug
+)
+
+if [[ "$*" == *"--enable-shared"* ]]; then
+  COMMON_CFG+=(--enable-shared)
+else
+  COMMON_CFG+=(--disable-shared)
+fi
+
+# By adjusting these options, you can streamline the compiled components, reducing the size of the final binary.
+COMMON_CFG+=(
   --disable-avdevice
   --enable-protocol=file
   --enable-filter=aformat
@@ -158,12 +187,71 @@ make -j"$CPU_COUNT"
 echo "=== Install to $PREFIX ==="
 make install
 
-echo "=== Done ==="
 echo "Static libraries (*.a) and headers have been installed to: $PREFIX"
+
+if [[ "$*" == *"--enable-merged-shared"* || "$*" == *"--enable-dynamic-program"* ]]; then
+  echo "=== Linking static libraries into libffmpeg.so ==="
+  LIBS_DIR="$PREFIX/lib"
+  OUT_SO="$PREFIX/lib/libffmpeg.so"
+
+  $CC \
+    -shared \
+    -o "$OUT_SO" \
+    -Wl,--whole-archive \
+      "$LIBS_DIR/libavcodec.a" \
+      "$LIBS_DIR/libavfilter.a" \
+      "$LIBS_DIR/libavformat.a" \
+      "$LIBS_DIR/libswresample.a" \
+      "$LIBS_DIR/libswscale.a" \
+      "$LIBS_DIR/libavutil.a" \
+    -Wl,--no-whole-archive \
+    -Wl,--allow-multiple-definition \
+    -Wl,-Bsymbolic \
+    -lm -lz -pthread
+
+  [[ -f "$OUT_SO" ]] && echo "libffmpeg.so created at: $OUT_SO" || {
+    echo "Failed to create libffmpeg.so" >&2
+    exit 1
+  }
+fi
+
+if [[ "$*" == *"--enable-dynamic-program"* ]]; then
+  
+
+  FFMPEG_OBJS=(
+    "fftools/ffmpeg_dec.o"
+    "fftools/ffmpeg_demux.o"
+    "fftools/ffmpeg_enc.o"
+    "fftools/ffmpeg_filter.o"
+    "fftools/ffmpeg_hw.o"
+    "fftools/ffmpeg_mux.o"
+    "fftools/ffmpeg_mux_init.o"
+    "fftools/ffmpeg_opt.o"
+    "fftools/ffmpeg_sched.o"
+    "fftools/objpool.o"
+    "fftools/sync_queue.o"
+    "fftools/thread_queue.o"
+    "fftools/cmdutils.o"
+    "fftools/opt_common.o"
+    "fftools/ffmpeg.o"
+  )
+
+  # Create ffmpeg executable
+  $CC \
+    "${FFMPEG_OBJS[@]}" \
+    -o "$PREFIX/bin/ffmpeg-dynamic" \
+    -L"$LIBS_DIR" \
+    -lm -lz -lffmpeg -pthread
+
+  [[ -f "$PREFIX/bin/ffmpeg-dynamic" ]] && echo "ffmpeg executable created at: $PREFIX/bin/ffmpeg-dynamic" || {
+    echo "Failed to create ffmpeg executable" >&2
+    exit 1
+  }
+fi
 
 # Create tgz archive
 echo "=== Creating tgz archive ==="
-ARCHIVE_NAME="ffmpeg_android_${TARGET_ARCH}_$(date +%Y%m%d).tgz"
+ARCHIVE_NAME="ffmpeg_android_${TARGET_ARCH}.tar.gz"
 cd "$(dirname "$PREFIX")"
 tar -czf "$ARCHIVE_NAME" "$(basename "$PREFIX")"
 echo "Archive created: $ARCHIVE_NAME"

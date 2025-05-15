@@ -1,1 +1,2 @@
-ffmpeg_android_*_build/
+ffmpeg_android_*/
+ffmpeg_android_*.tar.gz
