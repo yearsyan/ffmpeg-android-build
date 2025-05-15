@@ -20,15 +20,15 @@ jobs:
         java-version: '11'
 
     - name: Setup Android NDK
-      uses: android-actions/setup-android@v1
+      uses: nttld/setup-ndk@v1
+      id: setup-ndk
       with:
-        ndk-version: '29.0.13113456'
+        ndk-version: 'r26d'
+        add-to-path: true
 
     - name: Set up environment variables
       run: |
-        echo "ANDROID_NDK=$ANDROID_NDK_HOME" >> $GITHUB_ENV
-        echo "$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin" >> $GITHUB_PATH
-        echo "$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/bin" >> $GITHUB_PATH
+        echo "ANDROID_NDK=${{ steps.setup-ndk.outputs.ndk-path }}" >> $GITHUB_ENV
 
     - name: Get version from tag
       id: get_version
