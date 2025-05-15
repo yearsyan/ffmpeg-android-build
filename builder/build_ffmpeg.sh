@@ -3,9 +3,14 @@ set -euo pipefail
 
 # =============================================================================
 # Script: build_ffmpeg.sh
-# Purpose: Cross-compile Android static FFmpeg on macOS (Intel/M1) or Linux
+# Purpose: Cross-compile Android FFmpeg on macOS (Intel/M1) or Linux
 # Supported architectures: aarch64 (arm64-v8a), armv7a (armeabi-v7a), x86, x86_64
-# Usage: ./build_ffmpeg.sh [ARCH]  (default aarch64)
+# Usage: ./build_ffmpeg.sh [options]
+# Options:
+#   --arch=ARCH          Target architecture (default: aarch64)
+#   --enable-shared      Build shared libraries
+#   --enable-merged-shared  Link all static libraries into a single shared library
+#   --enable-dynamic-program  Build FFmpeg executable with dynamic linking
 # =============================================================================
 
 if [[ "$*" == *"--help"* || "$*" == *"-h"* ]]; then
@@ -30,7 +35,7 @@ fi
 
 # Adjustable parameters
 API_LEVEL=21                      # Minimum supported API level ≥ 21
-CPU_COUNT=$(sysctl -n hw.ncpu || nproc)
+CPU_COUNT=$(sysctl -n hw.ncpu 2>/dev/null || nproc)
 
 # Read architecture from the script's first argument, default is aarch64
 ARCH="aarch64"
@@ -112,7 +117,7 @@ cd "$(dirname "$0")/../ffmpeg"
 
 if [[ -f Makefile ]]; then
   echo "INFO: Detected Makefile, running make distclean..."
-  make distclean >> /dev/null || true
+  make distclean 2>/dev/null || true
 fi
 
 # Export cross-compilation toolchain
