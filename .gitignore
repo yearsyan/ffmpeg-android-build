@@ -1,2 +1,3 @@
 ffmpeg_android_*/
 ffmpeg_android_*.tar.gz
+.DS_Store

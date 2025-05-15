@@ -160,7 +160,7 @@ COMMON_CFG+=(
   --enable-filter=scale
 )
 
-if [[ "$ARCH" == "x86" || "$ARCH" == "x86_64" ]]; then
+if [[ "$ARCH" == "x86_64" ]]; then
   # Check if nasm exists on the host
   if command -v nasm &> /dev/null; then
     echo "INFO: Detected NASM. FFmpeg will try to use it for x86 assembly optimization."
@@ -168,13 +168,15 @@ if [[ "$ARCH" == "x86" || "$ARCH" == "x86_64" ]]; then
   else
     echo "INFO: NASM not detected on the host."
     echo "INFO: Will disable x86 assembly optimization (--disable-x86asm). The compiled output may be slightly larger and performance may be slightly worse."
-    if [[ "$ARCH" == "x86" ]]; then
-      # x86 needs to disable x86 assembly optimization
-      COMMON_CFG+=(--disable-asm)
-    else
-      COMMON_CFG+=(--disable-x86asm)
-    fi
+    COMMON_CFG+=(--disable-x86asm)
   fi
+fi
+
+if [[ "$ARCH" == "x86" ]]; then
+  # Disable x86 assembly optimization for Android NDK
+  # Reason: Clang in Android NDK does not support inline assembly with so many registers
+  echo "INFO: Disabling x86 assembly optimization (--disable-asm) due to limited register support in Android NDK's Clang."
+  COMMON_CFG+=(--disable-asm)
 fi
 
 echo "=== Start configuring FFmpeg [$ARCH] ==="
@@ -248,6 +250,12 @@ if [[ "$*" == *"--enable-dynamic-program"* ]]; then
     exit 1
   }
 fi
+
+# Calculate SHA512 hashes for all files
+echo "=== Calculating SHA512 hashes ==="
+cd "$PREFIX"
+find . -type f -exec sha512sum {} \; | sed 's|^\([^ ]*\)  \./|\1 |' > hash.txt
+echo "Hash file created at: $PREFIX/hash.txt"
 
 # Create tgz archive
 echo "=== Creating tgz archive ==="
