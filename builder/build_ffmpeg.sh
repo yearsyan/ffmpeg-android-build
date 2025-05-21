@@ -213,7 +213,7 @@ if [[ "$ARCH" == "x86" ]]; then
 fi
 
 echo "=== Start configuring FFmpeg [$ARCH] ==="
-PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig" \
+PKG_CONFIG_PATH="$DEPS_INSTALL/lib/pkgconfig" \
 ./configure "${COMMON_CFG[@]}"
 
 echo "=== Start compiling (parallel $CPU_COUNT) ==="

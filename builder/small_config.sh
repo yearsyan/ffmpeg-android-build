@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 EXTRA_BUILD_CFG=(
+  --disable-avdevice
   --disable-everything
   --disable-network
   --disable-filters

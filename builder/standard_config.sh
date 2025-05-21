@@ -6,7 +6,7 @@ EXTRA_BUILD_CFG=(
   --enable-filter=scale
   --enable-libaom
   --enable-libmp3lame
+  --disable-decoder=libaom_av1
   --enable-encoder=libaom_av1
-  --enable-decoder=libaom_av1
   --enable-encoder=libmp3lame
 )
