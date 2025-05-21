@@ -12,10 +12,11 @@ set -euo pipefail
 #   --enable-merged-shared  Link all static libraries into a single shared library
 #   --enable-dynamic-program  Build FFmpeg executable with dynamic linking
 #   --show-error        Show detailed error output when build fails
+#   --small-build       Build a minimal version with reduced features and smaller size
 # =============================================================================
 
 if [[ "$*" == *"--help"* || "$*" == *"-h"* ]]; then
-  echo "Usage: $0 [--arch=ARCH] [--enable-shared] [--enable-merged-shared] [--enable-dynamic-program] [--show-error]"
+  echo "Usage: $0 [--arch=ARCH] [--enable-shared] [--enable-merged-shared] [--enable-dynamic-program] [--show-error] [--small-build]"
   echo "Default architecture is aarch64 (arm64-v8a)."
   echo "Supported architectures: aarch64, armv7a, x86, x86_64."
   echo "Options:"
@@ -25,9 +26,13 @@ if [[ "$*" == *"--help"* || "$*" == *"-h"* ]]; then
   echo "  --enable-dynamic-program: Build the FFmpeg executable with dynamic linking."
   echo "                            Implies '--enable-merged-shared', and the resulting executable will depend on the merged shared library."
   echo "  --show-error: Show detailed error output when build fails. Without this option, only basic error messages are shown."
+  echo "  --small-build: Build a minimal version with reduced features and smaller size. This option enables only essential"
+  echo "                 codecs and features, resulting in a significantly smaller binary size."
   exit 0
 fi
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-${0}}")" && pwd)"
+export PROJECT_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]:-${0}}")/.." && pwd)
 # Required: ANDROID_NDK environment variable must point to the NDK root directory
 NDK_ROOT="${ANDROID_NDK:-}"
 if [[ -z "$NDK_ROOT" ]]; then
@@ -52,24 +57,28 @@ done
 # Set FFmpeg configure's --arch, --cpu, and NDK triple according to ARCH
 case "$ARCH" in
   aarch64)
-    TARGET_ARCH="aarch64"
-    TARGET_CPU="armv8-a"
-    TRIPLE="aarch64-linux-android"
+    export TARGET_ARCH="aarch64"
+    export TARGET_CPU="armv8-a"
+    export TRIPLE="aarch64-linux-android"
+    export ANDROID_ABI="arm64-v8a"
     ;;
   armv7a)
-    TARGET_ARCH="arm"
-    TARGET_CPU="armv7-a"
-    TRIPLE="armv7a-linux-androideabi"
+    export TARGET_ARCH="arm"
+    export TARGET_CPU="armv7-a"
+    export TRIPLE="armv7a-linux-androideabi"
+    export ANDROID_ABI="armeabi-v7a"
     ;;
   x86)
-    TARGET_ARCH="x86"
-    TARGET_CPU="i686"
-    TRIPLE="i686-linux-android"
+    export TARGET_ARCH="x86"
+    export TARGET_CPU="i686"
+    export TRIPLE="i686-linux-android"
+    export ANDROID_ABI="x86"
     ;;
   x86_64)
-    TARGET_ARCH="x86_64"
-    TARGET_CPU="x86-64"
-    TRIPLE="x86_64-linux-android"
+    export TARGET_ARCH="x86_64"
+    export TARGET_CPU="x86-64"
+    export TRIPLE="x86_64-linux-android"
+    export ANDROID_ABI="x86_64"
     ;;
   *)
     echo "Error: Unsupported architecture '$ARCH' (only support aarch64, armv7a, x86, x86_64)" >&2
@@ -78,6 +87,9 @@ case "$ARCH" in
 esac
 
 PREFIX="$(pwd)/ffmpeg_android_${TARGET_ARCH}"
+if [[ "$*" == *"--small-build"*  ]]; then
+  PREFIX="$(pwd)/ffmpeg_android_${TARGET_ARCH}_mini"
+fi
 
 # Automatically detect host prebuilt directory (macOS / Linux, Intel / Apple Silicon)
 HOST_OS=$(uname | tr '[:upper:]' '[:lower:]')
@@ -107,12 +119,23 @@ fi
 
 echo "Using host toolchain: $PREBUILT target architecture $ARCH"
 
-TOOLCHAIN_BIN="$NDK_ROOT/toolchains/llvm/prebuilt/$PREBUILT/bin"
-SYSROOT="$NDK_ROOT/toolchains/llvm/prebuilt/$PREBUILT/sysroot"
+export NDK_TOOLCHAIN="$NDK_ROOT/toolchains/llvm/prebuilt/$PREBUILT"
+TOOLCHAIN_BIN="$NDK_TOOLCHAIN/bin"
+SYSROOT="$NDK_TOOLCHAIN/sysroot"
 
 # Clean old output
 rm -rf "$PREFIX"
 mkdir -p "$PREFIX"
+
+DEPS_INSTALL="$PROJECT_ROOT/ffmpeg_android_dep_${TARGET_ARCH}"
+#build aom
+echo "Start build aom"
+export AOM_INSTALL=$DEPS_INSTALL
+bash "$SCRIPT_DIR/build_aom.sh"
+
+echo "Start build lame"
+export LAME_PREFIX=$DEPS_INSTALL
+bash "$SCRIPT_DIR/build_lame.sh"
 
 # Enter FFmpeg source directory
 cd "$(dirname "$0")/../ffmpeg"
@@ -146,6 +169,8 @@ COMMON_CFG=(
   --ranlib="$RANLIB"
   --ld="$LD"
   --strip="$STRIP"
+  --extra-cflags="-I$DEPS_INSTALL/include"
+  --extra-ldflags="-L$DEPS_INSTALL/lib"
   --enable-cross-compile
   --enable-pic
   --enable-static
@@ -160,12 +185,13 @@ else
 fi
 
 # By adjusting these options, you can streamline the compiled components, reducing the size of the final binary.
-COMMON_CFG+=(
-  --disable-avdevice
-  --enable-protocol=file
-  --enable-filter=aformat
-  --enable-filter=scale
-)
+if [[ "$*" == *"--small-build"*  ]]; then
+  source "$SCRIPT_DIR/small_config.sh"
+else
+  source "$SCRIPT_DIR/standard_config.sh"
+fi
+
+COMMON_CFG+=("${EXTRA_BUILD_CFG[@]}")
 
 if [[ "$ARCH" == "x86_64" ]]; then
   # Check if nasm exists on the host
@@ -228,6 +254,9 @@ if [[ "$*" == *"--enable-merged-shared"* || "$*" == *"--enable-dynamic-program"*
       "$LIBS_DIR/libswscale.a" \
       "$LIBS_DIR/libavutil.a" \
     -Wl,--no-whole-archive \
+      "$DEPS_INSTALL/lib/libaom.a" \
+      "$DEPS_INSTALL/lib/libmp3lame.a" \
+    -Wl,--gc-sections \
     -Wl,--allow-multiple-definition \
     -Wl,-Bsymbolic \
     -lm -lz -pthread
@@ -259,6 +288,7 @@ if [[ "$*" == *"--enable-dynamic-program"* ]]; then
     "fftools/ffmpeg.o"
   )
 
+  echo "=== Create ffmpeg-dynamic  ==="
   # Create ffmpeg executable
   $CC \
     "${FFMPEG_OBJS[@]}" \
@@ -281,6 +311,9 @@ echo "Hash file created at: $PREFIX/hash.txt"
 # Create tgz archive
 echo "=== Creating tgz archive ==="
 ARCHIVE_NAME="ffmpeg_android_${TARGET_ARCH}.tar.gz"
+if [[ "$*" == *"--small-build"*  ]]; then
+  ARCHIVE_NAME="ffmpeg_android_${TARGET_ARCH}_mini.tar.gz"
+fi
 cd "$(dirname "$PREFIX")"
 tar -czf "$ARCHIVE_NAME" "$(basename "$PREFIX")"
 echo "Archive created: $ARCHIVE_NAME"

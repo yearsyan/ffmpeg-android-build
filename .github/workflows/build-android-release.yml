@@ -55,5 +55,9 @@ jobs:
           ./ffmpeg_android_arm.tar.gz
           ./ffmpeg_android_x86.tar.gz
           ./ffmpeg_android_x86_64.tar.gz
+          ./ffmpeg_android_aarch64_mini.tar.gz
+          ./ffmpeg_android_arm_mini.tar.gz
+          ./ffmpeg_android_x86_mini.tar.gz
+          ./ffmpeg_android_x86_64_mini.tar.gz
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

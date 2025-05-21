@@ -32,4 +32,5 @@ BUILD_ARGS=(
 for arch in "${ARCHS[@]}"; do
   echo "Building for architecture: ${arch}"
   "${SCRIPT_DIR}/build_ffmpeg.sh" "${BUILD_ARGS[@]}" --arch="${arch}"
+  "${SCRIPT_DIR}/build_ffmpeg.sh" "${BUILD_ARGS[@]}" --arch="${arch}" --small-build
 done

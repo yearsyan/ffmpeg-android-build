@@ -2,3 +2,9 @@
 	path = ffmpeg
 	url = https://git.ffmpeg.org/ffmpeg.git
 	branch = release/7.1
+[submodule "libaom"]
+	path = libaom
+	url = https://aomedia.googlesource.com/aom
+[submodule "libmp3lame"]
+	path = libmp3lame
+	url = https://github.com/rbrito/lame.git
