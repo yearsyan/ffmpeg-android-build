@@ -54,3 +54,4 @@ fi
 
 cmake "${CMAKE_ARGS[@]}"
 cmake --build . --config Release --target install -- -j$(nproc)
+$NDK_TOOLCHAIN/bin/llvm-strip --strip-unneeded "$AOM_INSTALL/lib/libaom.a"

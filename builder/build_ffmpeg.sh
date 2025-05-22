@@ -267,6 +267,7 @@ if [[ "$*" == *"--enable-merged-shared"* || "$*" == *"--enable-dynamic-program"*
     echo "Failed to create libffmpeg.so" >&2
     exit 1
   }
+  $STRIP --strip-unneeded $OUT_SO
 fi
 
 if [[ "$*" == *"--enable-dynamic-program"* ]]; then
