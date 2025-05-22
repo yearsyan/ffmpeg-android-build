@@ -20,8 +20,7 @@ ARCHS=(
   "aarch64"
   "armv7a"
   "x86"
-  # fixme: bug
-  #"x86_64"
+  "x86_64"
 )
 
 # Common build arguments

@@ -86,9 +86,11 @@ case "$ARCH" in
     ;;
 esac
 
-PREFIX="$(pwd)/ffmpeg_android_${TARGET_ARCH}"
+export BUILD_DIR_NMAE="build"
+BUILD_DIST="$PROJECT_ROOT/$BUILD_DIR_NMAE"
+PREFIX="$BUILD_DIST/ffmpeg_android_${TARGET_ARCH}"
 if [[ "$*" == *"--small-build"*  ]]; then
-  PREFIX="$(pwd)/ffmpeg_android_${TARGET_ARCH}_mini"
+  PREFIX="$BUILD_DIST/ffmpeg_android_${TARGET_ARCH}_mini"
 fi
 
 # Automatically detect host prebuilt directory (macOS / Linux, Intel / Apple Silicon)
@@ -127,7 +129,7 @@ SYSROOT="$NDK_TOOLCHAIN/sysroot"
 rm -rf "$PREFIX"
 mkdir -p "$PREFIX"
 
-DEPS_INSTALL="$PROJECT_ROOT/ffmpeg_android_dep_${TARGET_ARCH}"
+DEPS_INSTALL="$PROJECT_ROOT/$BUILD_DIR_NMAE/ffmpeg_android_dep_${TARGET_ARCH}"
 #build aom
 echo "Start build aom"
 export AOM_INSTALL=$DEPS_INSTALL
@@ -315,5 +317,5 @@ if [[ "$*" == *"--small-build"*  ]]; then
   ARCHIVE_NAME="ffmpeg_android_${TARGET_ARCH}_mini.tar.gz"
 fi
 cd "$(dirname "$PREFIX")"
-tar -czf "$ARCHIVE_NAME" "$(basename "$PREFIX")"
+tar -czf "$PROJECT_ROOT/$ARCHIVE_NAME" "$(basename "$PREFIX")"
 echo "Archive created: $ARCHIVE_NAME"

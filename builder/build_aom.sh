@@ -4,7 +4,7 @@ set -e
 NDK="${ANDROID_NDK:-}"
 API=21
 AOM_SRC=$PROJECT_ROOT/libaom
-AOM_BUILD=$PROJECT_ROOT/build-temp/aom_build_android_$TARGET_ARCH
+AOM_BUILD=$PROJECT_ROOT/$BUILD_DIR_NMAE/aom_build_android_$TARGET_ARCH
 
 if [ -f "$AOM_INSTALL/lib/libaom.a" ]; then
   echo "libaom.a exist. Pass"
@@ -16,7 +16,7 @@ mkdir -p "$AOM_BUILD" "$AOM_INSTALL"
 
 cd "$AOM_BUILD"
 
-# 定义CMake参数数组
+# aom arguments
 CMAKE_ARGS=(
   "$AOM_SRC"
   "-DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake"
@@ -26,7 +26,6 @@ CMAKE_ARGS=(
   "-DCONFIG_AV1_DECODER=0"
   "-DCMAKE_BUILD_TYPE=Release"
   "-DBUILD_SHARED_LIBS=OFF"
-  "-DENABLE_AV1_DECODER=0"
   "-DCONFIG_DENOISE=0"
   "-DCONFIG_QUANT_MATRIX=0"
   "-DCONFIG_WEBM_IO=0"
@@ -35,7 +34,6 @@ CMAKE_ARGS=(
   "-DENABLE_TESTS=OFF"
   "-DENABLE_DOCS=OFF"
   "-DENABLE_EXAMPLES=OFF"
-  "-DAOM_TARGET_CPU=$TARGET_CPU"
   "-DCONFIG_AV1_HIGHBITDEPTH=0"
   "-DCONFIG_RUNTIME_CPU_DETECT=0"
   "-DCMAKE_C_FLAGS=-ffunction-sections -fdata-sections"
@@ -47,9 +45,12 @@ CMAKE_ARGS=(
   "-DCMAKE_INSTALL_PREFIX=$AOM_INSTALL"
 )
 
+if [[ $TARGET_CPU != "x86-64" ]]; then
+  CMAKE_ARGS+=(
+    "-DAOM_TARGET_CPU=$TARGET_CPU"
+  )
+fi
 
-# 执行CMake命令
+
 cmake "${CMAKE_ARGS[@]}"
-
 cmake --build . --config Release --target install -- -j$(nproc)
-$NDK_TOOLCHAIN/bin/llvm-strip --strip-unneeded "$AOM_INSTALL/lib/libaom.a"
