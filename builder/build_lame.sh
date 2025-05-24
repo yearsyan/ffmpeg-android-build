@@ -2,7 +2,6 @@
 set -e
 
 NDK="${ANDROID_NDK:-}"
-API=21
 PREFIX=$LAME_PREFIX
 
 if [ -f "$LAME_PREFIX/lib/libmp3lame.a" ]; then
@@ -10,7 +9,7 @@ if [ -f "$LAME_PREFIX/lib/libmp3lame.a" ]; then
   exit 0
 fi
 
-export CC=$NDK_TOOLCHAIN/bin/${TRIPLE}${API}-clang
+export CC=$NDK_TOOLCHAIN/bin/${TRIPLE}${ANDROID_API_LEVEL}-clang
 
 cd "$PROJECT_ROOT/libmp3lame"
 

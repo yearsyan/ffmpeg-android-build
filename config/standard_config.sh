@@ -1,12 +1,9 @@
 #!/usr/bin/env bash
+
+# Basic configuration
 EXTRA_BUILD_CFG=(
   --disable-avdevice
   --enable-protocol=file
   --enable-filter=aformat
   --enable-filter=scale
-  --enable-libaom
-  --enable-libmp3lame
-  --disable-decoder=libaom_av1
-  --enable-encoder=libaom_av1
-  --enable-encoder=libmp3lame
 )

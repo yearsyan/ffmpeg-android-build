@@ -8,3 +8,6 @@
 [submodule "libmp3lame"]
 	path = libmp3lame
 	url = https://github.com/rbrito/lame.git
+[submodule "dav1d"]
+	path = dav1d
+	url = https://github.com/videolan/dav1d.git

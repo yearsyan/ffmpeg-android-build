@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Basic configuration
 EXTRA_BUILD_CFG=(
   --disable-avdevice
   --disable-everything
@@ -47,10 +48,6 @@ EXTRA_BUILD_CFG=(
   --enable-demuxer=mp3
   --enable-demuxer=wav
   --enable-demuxer=flac
-  --enable-libaom
-  --enable-libmp3lame
-  --enable-encoder=libaom_av1
-  --enable-encoder=libmp3lame
   --disable-parsers
   --enable-parser=aac
   --enable-parser=ac3

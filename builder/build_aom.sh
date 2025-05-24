@@ -2,14 +2,9 @@
 set -e
 
 NDK="${ANDROID_NDK:-}"
-API=21
 AOM_SRC=$PROJECT_ROOT/libaom
 AOM_BUILD=$PROJECT_ROOT/$BUILD_DIR_NMAE/aom_build_android_$TARGET_ARCH
 
-if [ -f "$AOM_INSTALL/lib/libaom.a" ]; then
-  echo "libaom.a exist. Pass"
-  exit 0
-fi
 
 rm -rf "$AOM_BUILD" "$AOM_INSTALL"
 mkdir -p "$AOM_BUILD" "$AOM_INSTALL"
@@ -21,7 +16,7 @@ CMAKE_ARGS=(
   "$AOM_SRC"
   "-DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake"
   "-DANDROID_ABI=${ANDROID_ABI}"
-  "-DANDROID_PLATFORM=android-${API}"
+  "-DANDROID_PLATFORM=android-${ANDROID_API_LEVEL}"
   "-DCONFIG_SVT_AV1=0"
   "-DCONFIG_AV1_DECODER=0"
   "-DCMAKE_BUILD_TYPE=Release"
