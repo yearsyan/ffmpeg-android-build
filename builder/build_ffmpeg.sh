@@ -35,6 +35,8 @@ export ENABLE_DAV1D=1
 export ENABLE_AOM_ENCODER=1
 export ENABLE_AOM_DECODER=0
 export ENABLE_MP3LAME=1
+export ENABLE_X264=0
+export ENABLE_X265=0
 
 # Read architecture from the script's first argument, default is aarch64
 export ARCH="aarch64"
@@ -169,6 +171,9 @@ function env_setup() {
   export RANLIB="$TOOLCHAIN_BIN/llvm-ranlib"
   export STRIP="$TOOLCHAIN_BIN/llvm-strip"
   export LD="$CC"
+
+  source "$SCRIPT_DIR/setup_cmake.sh"
+  source "$SCRIPT_DIR/setup_meson.sh"
 }
 
 function build_and_install_deps() {
@@ -199,6 +204,24 @@ function build_and_install_deps() {
       exit 1
     }
   fi
+
+  if [[ $ENABLE_X264 == 1 ]]; then
+    echo "Start build x264"
+    export X264_PREFIX=$DEPS_INSTALL
+    bash "$SCRIPT_DIR/build_x264.sh" >> "$LOG_FILE" 2>> "$ERROR_LOG_FILE" || {
+      echo "X264 build failed. Check $ERROR_LOG_FILE for details."
+      exit 1
+    }
+  fi
+
+  if [[ $ENABLE_X265 == 1 ]]; then
+    echo "Start build x265"
+    export X265_PREFIX=$DEPS_INSTALL
+    bash "$SCRIPT_DIR/build_x265.sh" >> "$LOG_FILE" 2>> "$ERROR_LOG_FILE" || {
+      echo "X265 build failed. Check $ERROR_LOG_FILE for details."
+      exit 1
+    }
+  fi
 }
 
 function build_ffmpeg() {  
@@ -220,6 +243,7 @@ function build_ffmpeg() {
     --enable-cross-compile
     --extra-cflags="\"-I$DEPS_INSTALL/include\""
     --extra-ldflags="\"-L$DEPS_INSTALL/lib\""
+    --enable-pthreads
     --enable-pic
     --disable-shared
     --enable-static
@@ -309,6 +333,14 @@ function build_ffmpeg() {
 
     if [[ "$ENABLE_MP3LAME" == "1" ]]; then
       DEPS_LIBS+=("$DEPS_INSTALL/lib/libmp3lame.a")
+    fi
+
+    if [[ "$ENABLE_X264" == "1" ]]; then
+      DEPS_LIBS+=("$DEPS_INSTALL/lib/libx264.a")
+    fi
+
+    if [[ "$ENABLE_X265" == "1" ]]; then
+      DEPS_LIBS+=("$DEPS_INSTALL/lib/libx265.a")
     fi
 
     # Add linking options
