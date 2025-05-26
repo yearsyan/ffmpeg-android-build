@@ -3,3 +3,13 @@ ffmpeg_android_*.tar.gz
 .DS_Store
 build/
 tools/
+
+# Gradle
+.gradle/
+**/build/
+local.properties
+
+# IDE
+.idea/
+*.iml
+.vscode/
