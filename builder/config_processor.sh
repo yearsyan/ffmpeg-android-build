@@ -42,6 +42,26 @@ function ffmpeg_config_processor() {
     )
   fi
 
+  if [[ "${ENABLE_X264:-0}" == "1" ]]; then
+    env_configs+=(
+      --enable-libx264
+      --enable-encoder=libx264
+    )
+  fi
+
+  if [[ "${ENABLE_X265:-0}" == "1" ]]; then
+    env_configs+=(
+      --enable-libx265
+      --enable-encoder=libx265
+    )
+  fi
+
+  if [[ "${ENABLE_X265:-0}" == "1" || "${ENABLE_X264:-0}" == "1" ]]; then
+    env_configs+=(
+      --enable-gpl
+    )
+  fi
+
   # Add configurations from EXTRA_BUILD_CFG first
   base_config+=("${EXTRA_BUILD_CFG[@]}")
 

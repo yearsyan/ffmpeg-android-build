@@ -27,6 +27,9 @@
       - dav1d：高性能AV1解码器
       - aom：仅AV1编码器
       - mp3lame：高质量MP3编码器
+  - GPL构建：包含标准构建的所有功能，并额外支持：
+    - x264：H.264编码器
+    - x265：HEVC编码器
 - 可选功能：
   - 动态程序支持
   - 共享库支持
@@ -59,7 +62,7 @@ export ANDROID_NDK=/path/to/android-ndk
 - `--arch=ARCH`：目标架构（默认：aarch64）
   - 支持：aarch64, armv7a, x86, x86_64
 - `--config=CONFIG`：构建配置（默认：standard）
-  - 支持：standard, mini
+  - 支持：standard, mini, gpl
 - `--enable-shared`：构建共享库
 - `--enable-merged-shared`：将所有静态库链接到单个共享库中
 - `--enable-dynamic-program`：构建动态链接的FFmpeg可执行文件

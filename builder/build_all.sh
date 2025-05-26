@@ -31,6 +31,7 @@ BUILD_ARGS=(
 # Build for each architecture
 for arch in "${ARCHS[@]}"; do
   echo "Building for architecture: ${arch}"
-  "${SCRIPT_DIR}/build_ffmpeg.sh" "${BUILD_ARGS[@]}" --arch="${arch}"
-  "${SCRIPT_DIR}/build_ffmpeg.sh" "${BUILD_ARGS[@]}" --arch="${arch}" --config="mini"
+  # "${SCRIPT_DIR}/build_ffmpeg.sh" "${BUILD_ARGS[@]}" --arch="${arch}"
+  # "${SCRIPT_DIR}/build_ffmpeg.sh" "${BUILD_ARGS[@]}" --arch="${arch}" --config="mini"
+  "${SCRIPT_DIR}/build_ffmpeg.sh" "${BUILD_ARGS[@]}" --arch="${arch}" --config="gpl"
 done

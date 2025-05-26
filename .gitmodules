@@ -11,3 +11,11 @@
 [submodule "dav1d"]
 	path = dav1d
 	url = https://github.com/videolan/dav1d.git
+[submodule "x264"]
+	path = x264
+	url = https://code.videolan.org/videolan/x264.git
+	branch = stable
+[submodule "x265"]
+	path = x265
+	url = https://bitbucket.org/multicoreware/x265_git.git
+	branch = Release_4.1

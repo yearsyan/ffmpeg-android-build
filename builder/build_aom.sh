@@ -6,8 +6,8 @@ AOM_SRC=$PROJECT_ROOT/libaom
 AOM_BUILD=$PROJECT_ROOT/$BUILD_DIR_NMAE/aom_build_android_$TARGET_ARCH
 
 
-rm -rf "$AOM_BUILD" "$AOM_INSTALL"
-mkdir -p "$AOM_BUILD" "$AOM_INSTALL"
+rm -rf "$AOM_BUILD"
+mkdir -p "$AOM_BUILD"
 
 cd "$AOM_BUILD"
 
@@ -18,7 +18,7 @@ CMAKE_ARGS=(
   "-DANDROID_ABI=${ANDROID_ABI}"
   "-DANDROID_PLATFORM=android-${ANDROID_API_LEVEL}"
   "-DCONFIG_SVT_AV1=0"
-  "-DCONFIG_AV1_DECODER=0"
+  "-DCONFIG_AV1_DECODER=${ENABLE_AOM_DECODER:0}"
   "-DCMAKE_BUILD_TYPE=Release"
   "-DBUILD_SHARED_LIBS=OFF"
   "-DCONFIG_DENOISE=0"
@@ -47,6 +47,6 @@ if [[ $TARGET_CPU != "x86-64" ]]; then
 fi
 
 
-cmake "${CMAKE_ARGS[@]}"
-cmake --build . --config Release --target install -- -j$(nproc)
+$CMAKE "${CMAKE_ARGS[@]}"
+$CMAKE --build . --config Release --target install -- -j$(nproc)
 $NDK_TOOLCHAIN/bin/llvm-strip --strip-unneeded "$AOM_INSTALL/lib/libaom.a"

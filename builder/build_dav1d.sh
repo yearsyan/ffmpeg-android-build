@@ -75,6 +75,6 @@ mkdir -p $DAV1D_BUILD
 
 cd $PROJECT_ROOT/dav1d
 generate_cross_file "$ARCH" "$PROJECT_ROOT/$BUILD_DIR_NMAE"
-meson setup "$DAV1D_BUILD" --buildtype release --cross-file "$PROJECT_ROOT/$BUILD_DIR_NMAE/android-$ARCH.txt"  --default-library=static -Denable_tools=false -Denable_tests=false -Dprefix="$DAV1D_PREFIX"
+$MESON setup "$DAV1D_BUILD" --buildtype release --cross-file "$PROJECT_ROOT/$BUILD_DIR_NMAE/android-$ARCH.txt"  --default-library=static -Denable_tools=false -Denable_tests=false -Dprefix="$DAV1D_PREFIX"
 ninja -C $DAV1D_BUILD install
 $NDK_TOOLCHAIN/bin/llvm-strip --strip-unneeded "$DAV1D_PREFIX/lib/libdav1d.a"

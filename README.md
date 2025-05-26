@@ -27,6 +27,9 @@ A cross-compilation project for building FFmpeg for Android platforms. This proj
       - dav1d: High-performance AV1 decoder
       - aom: AV1 encoder only
       - mp3lame: High-quality MP3 encoder
+  - GPL build: Includes all features from standard build plus:
+    - x264: H.264 encoder
+    - x265: HEVC encoder
 - Optional features:
   - Dynamic program support
   - Shared library support
@@ -59,7 +62,7 @@ export ANDROID_NDK=/path/to/android-ndk
 - `--arch=ARCH`: Target architecture (default: aarch64)
   - Supported: aarch64, armv7a, x86, x86_64
 - `--config=CONFIG`: Build configuration (default: standard)
-  - Supported: standard, mini
+  - Supported: standard, mini, gpl
 - `--enable-shared`: Build shared libraries
 - `--enable-merged-shared`: Link all static libraries into a single shared library
 - `--enable-dynamic-program`: Build FFmpeg executable with dynamic linking
