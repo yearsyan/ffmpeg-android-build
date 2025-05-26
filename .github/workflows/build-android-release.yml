@@ -30,14 +30,36 @@ jobs:
       run: |
         echo "ANDROID_NDK=${{ steps.setup-ndk.outputs.ndk-path }}" >> $GITHUB_ENV
 
+    - name: Install nasm
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y nasm
+
     - name: Get version from tag
       id: get_version
       run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
     - name: Build FFmpeg for all architectures
+      id: build_ffmpeg
       run: |
         chmod +x builder/build_all.sh
-        builder/build_all.sh
+        builder/build_all.sh || {
+          echo "Build failed with exit code $?"
+          exit 1
+        }
+
+    - name: Upload build logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-logs
+        path: |
+          build/*.log.txt
+          build/*.log.error
+        retention-days: 14
+        if-no-files-found: warn
+        compression-level: 0
+        overwrite: true
 
     - name: List build artifacts
       run: |
