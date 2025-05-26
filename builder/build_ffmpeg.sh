@@ -416,8 +416,8 @@ function pack_tgz() {
   echo "=== Creating tgz archive ==="
   ARCHIVE_NAME="ffmpeg_android_${TARGET_ARCH}${BUILD_SUFFIX}.tar.gz"
   cd "$(dirname "$PREFIX")"
-  tar -czf "$PROJECT_ROOT/$ARCHIVE_NAME" "$(basename "$PREFIX")" >> "$LOG_FILE" 2>> "$ERROR_LOG_FILE"
-  echo "Archive created: $ARCHIVE_NAME"
+  tar -czf "$BUILD_DIST/$ARCHIVE_NAME" "$(basename "$PREFIX")" >> "$LOG_FILE" 2>> "$ERROR_LOG_FILE"
+  echo "Archive created: $BUILD_DIST/$ARCHIVE_NAME"
 }
 
 env_setup
