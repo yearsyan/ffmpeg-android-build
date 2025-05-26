@@ -14,6 +14,12 @@ mkdir -p "$X264_BUILD"
 
 cd "$PROJECT_ROOT/x264"
 
+# Add architecture specific flags
+ARCH_FLAGS=""
+if [ "$TARGET_ARCH" = "arm" ]; then
+    ARCH_FLAGS="-march=armv7-a"
+fi
+
 STRINGS="$NDK_TOOLCHAIN/bin/llvm-strings" ./configure \
   --prefix="$X264_INSTALL" \
   --enable-static \
@@ -30,7 +36,7 @@ STRINGS="$NDK_TOOLCHAIN/bin/llvm-strings" ./configure \
   --host="$TRIPLE" \
   --cross-prefix="$NDK_TOOLCHAIN/bin/${TRIPLE}-" \
   --sysroot="$NDK_TOOLCHAIN/sysroot" \
-  --extra-cflags="-fPIC -ffunction-sections -fdata-sections" \
+  --extra-cflags="-fPIC -ffunction-sections -fdata-sections -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE $ARCH_FLAGS" \
   --extra-ldflags="-Wl,--gc-sections"
 
 make -j$(nproc)

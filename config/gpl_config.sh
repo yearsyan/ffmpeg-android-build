@@ -3,7 +3,7 @@
 export ENABLE_AOM_DECODER=1
 export ENABLE_AOM_ENCODER=1
 export ENABLE_X264=1
-export ENABLE_X265=0
+export ENABLE_X265=1
 
 
 # Basic configuration

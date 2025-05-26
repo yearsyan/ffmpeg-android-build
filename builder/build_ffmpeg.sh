@@ -251,6 +251,10 @@ function build_ffmpeg() {
     --disable-debug
   )
 
+  if [[ "${ENABLE_X265:-0}" == "1" ]]; then
+    COMMON_CFG+=(--extra-libs="-lm -lc++_static -lc++abi")
+  fi
+
   if [[ "$ARCH" == "x86_64" ]]; then
     # Check if nasm exists on the host
     if command -v nasm &> /dev/null; then
@@ -280,7 +284,7 @@ function build_ffmpeg() {
   fi
 
   echo "=== Start configuring FFmpeg [$ARCH] ==="
-  PKG_CONFIG_PATH="$DEPS_INSTALL/lib/pkgconfig" ./configure "${COMMON_CFG[@]}" 2>> "$ERROR_LOG_FILE"
+  PKG_CONFIG_PATH="$DEPS_INSTALL/lib/pkgconfig" ./configure "${COMMON_CFG[@]}"
 
   echo "=== Start compiling (parallel $CPU_COUNT) ==="
   make -j"$CPU_COUNT" >> "$LOG_FILE" 2>> "$ERROR_LOG_FILE" || {
@@ -309,20 +313,14 @@ function build_ffmpeg() {
     )
 
     # Add FFmpeg static libraries
-    FFMPEG_LIBS=(
-      "$LIBS_DIR/libavcodec.a"
-      "$LIBS_DIR/libavfilter.a"
-      "$LIBS_DIR/libavformat.a"
-      "$LIBS_DIR/libswresample.a"
-      "$LIBS_DIR/libswscale.a"
-      "$LIBS_DIR/libavutil.a"
-    )
+    FFMPEG_LIBS=($LIBS_DIR/*.a)
 
     # Add dependency libraries and no-whole-archive
     DEPS_LIBS=(
       -Wl,--no-whole-archive
     )
 
+    local enable_cxx_lib=0
     if [[ "$ENABLE_DAV1D" == "1" ]]; then
       DEPS_LIBS+=("$DEPS_INSTALL/lib/libdav1d.a")
     fi
@@ -341,6 +339,7 @@ function build_ffmpeg() {
 
     if [[ "$ENABLE_X265" == "1" ]]; then
       DEPS_LIBS+=("$DEPS_INSTALL/lib/libx265.a")
+      enable_cxx_lib=1
     fi
 
     # Add linking options
@@ -350,6 +349,10 @@ function build_ffmpeg() {
       -Wl,-Bsymbolic
       -lm -lz -pthread
     )
+
+    if [[ "$enable_cxx_lib" == "1" ]]; then
+      LINK_OPTS+=(-lc++_static -lc++abi)
+    fi
 
     # Execute compilation command
     $CC \
@@ -391,7 +394,7 @@ function build_ffmpeg() {
       "${FFMPEG_OBJS[@]}" \
       -o "$PREFIX/bin/ffmpeg-dynamic" \
       -L"$LIBS_DIR" \
-      -lm -lz -lffmpeg -pthread >> "$LOG_FILE" 2>> "$ERROR_LOG_FILE"
+      -lm -lz -lffmpeg -pthread
 
     [[ -f "$PREFIX/bin/ffmpeg-dynamic" ]] && echo "ffmpeg executable created at: $PREFIX/bin/ffmpeg-dynamic" || {
       echo "Failed to create ffmpeg executable" >&2
@@ -422,5 +425,4 @@ build_and_install_deps
 build_ffmpeg
 calculate_hash
 pack_tgz
-
 
