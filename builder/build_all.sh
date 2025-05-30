@@ -18,8 +18,8 @@ fi
 # List of supported architectures
 ARCHS=(
   "aarch64"
-  "armv7a"
-  "x86"
+  # "armv7a"
+  # "x86"
   "x86_64"
 )
 
@@ -35,3 +35,13 @@ for arch in "${ARCHS[@]}"; do
   "${SCRIPT_DIR}/build_ffmpeg.sh" "${BUILD_ARGS[@]}" --arch="${arch}" --config="mini"
   "${SCRIPT_DIR}/build_ffmpeg.sh" "${BUILD_ARGS[@]}" --arch="${arch}" --config="gpl"
 done
+
+echo "=== All architectures built successfully ==="
+
+# Create Prefab packages for each configuration
+echo "=== Creating Prefab packages ==="
+"${SCRIPT_DIR}/create_prefab.sh" --config="standard"
+"${SCRIPT_DIR}/create_prefab.sh" --config="mini"
+"${SCRIPT_DIR}/create_prefab.sh" --config="gpl"
+
+echo "=== Build and packaging completed ==="
