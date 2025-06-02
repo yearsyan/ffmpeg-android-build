@@ -91,14 +91,14 @@ for arch in "${ARCHS[@]}"; do
   if [[ -f "$FFMPEG_BUILD_DIR/lib/libffmpeg.so" ]]; then
     # Copy to both prefab libs and jni directories
     cp "$FFMPEG_BUILD_DIR/lib/libffmpeg.so" "$PREFAB_LIB_DIR/"
-    cp "$FFMPEG_BUILD_DIR/lib/libffmpeg.so" "$JNI_LIB_DIR/"
+    # cp "$FFMPEG_BUILD_DIR/lib/libffmpeg.so" "$JNI_LIB_DIR/"
     echo "  Copied libffmpeg.so for $ANDROID_ABI"
   else
     echo "  Warning: libffmpeg.so not found for $ANDROID_ABI"
   fi
 
   if [[ -f "$FFMPEG_BUILD_DIR/bin/ffmpeg-dynamic" ]]; then
-    cp "$FFMPEG_BUILD_DIR/bin/ffmpeg-dynamic" "$JNI_LIB_DIR/ffmpegexe"
+    cp "$FFMPEG_BUILD_DIR/bin/ffmpeg-dynamic" "$JNI_LIB_DIR/libffmpegexe.so"
     echo "  Copied ffmpegexe for $ANDROID_ABI"
   fi
   

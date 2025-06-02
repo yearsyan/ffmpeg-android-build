@@ -18,8 +18,8 @@ fi
 # List of supported architectures
 ARCHS=(
   "aarch64"
-  # "armv7a"
-  # "x86"
+  "armv7a"
+  "x86"
   "x86_64"
 )
 

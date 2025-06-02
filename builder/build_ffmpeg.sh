@@ -308,6 +308,7 @@ function build_ffmpeg() {
     # Define compilation parameters array
     COMPILE_ARGS=(
       -shared
+      -Wl,-soname,libffmpeg.so
       -o "$OUT_SO"
       -Wl,--whole-archive
     )
