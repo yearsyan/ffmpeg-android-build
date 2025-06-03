@@ -71,7 +71,7 @@ jobs:
       id: release_files
       run: |
         echo "files<<EOF" >> $GITHUB_OUTPUT
-        for f in build/ffmpeg_android_*.tar.gz; do
+        for f in build/ffmpeg_android_*.tar.gz build/*.aar; do
           echo "$f" >> $GITHUB_OUTPUT
         done
         echo "EOF" >> $GITHUB_OUTPUT
@@ -84,3 +84,12 @@ jobs:
         files: ${{ steps.release_files.outputs.files }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Release to Maven
+      run: |
+        chmod +x release.sh
+        ./release.sh
+      env:
+        GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
+        SONATYPE_AUTH_TOKEN: ${{ secrets.SONATYPE_AUTH_TOKEN }}
+        GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
