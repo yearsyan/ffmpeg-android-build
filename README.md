@@ -42,7 +42,60 @@ A cross-compilation project for building FFmpeg for Android platforms. This proj
 - Basic build tools (make, tar, etc.)
 - For x86_64 builds: NASM (optional, for assembly optimization)
 
-## Usage
+## Library Usage
+
+### 1. Add dependency in build.gradle
+
+The library is published on Maven Central and uses Prefab package format for native dependencies, which is supported by Android Gradle Plugin 4.0+.
+
+```gradle
+android {
+    buildFeatures {
+        prefab true
+    }
+}
+
+dependencies {
+    // For mini build
+    implementation 'io.github.yearsyan:ffmpeg-mini:7.1-beta.13'
+    // Or for standard build
+    implementation 'io.github.yearsyan:ffmpeg-standard:7.1-beta.13'
+}
+```
+
+Note: The library uses the prefab package schema v2, which is configured by default since Android Gradle Plugin 7.1.0. If you are using Android Gradle Plugin earlier than 7.1.0, please add the following configuration to gradle.properties:
+
+```properties
+android.prefabVersion=2.0.0
+```
+
+### 2. Add dependency in CMakeLists.txt or Android.mk
+
+CMakeLists.txt:
+```cmake
+find_package(ffmpeg REQUIRED CONFIG)
+
+add_library(mylib SHARED mylib.c)
+target_link_libraries(mylib ffmpeg::ffmpeg)
+```
+
+Android.mk:
+```makefile
+include $(CLEAR_VARS)
+LOCAL_MODULE           := mylib
+LOCAL_SRC_FILES        := mylib.c
+LOCAL_SHARED_LIBRARIES += ffmpeg
+include $(BUILD_SHARED_LIBRARY)
+
+$(call import-module,prefab/ffmpeg)
+```
+
+### Additional Notes
+
+- GPL version is not available on Maven Central. You can download it directly from [GitHub Releases](https://github.com/yearsyan/ffmpeg-android-build/releases).
+- If you need to customize build parameters, you can fork this repository and modify the build configuration according to your needs. 
+
+## Script Usage
 
 ### Basic Build
 
@@ -78,56 +131,3 @@ The build process creates:
 - Compressed archive (.tar.gz)
 
 Build artifacts for all architectures and configurations are available in the [Releases](https://github.com/yearsyan/ffmpeg-android-build/releases) section. Each release includes both standard and mini configurations for all supported architectures. 
-
-## Library Usage
-
-### 1. Add dependency in build.gradle
-
-The library is published on Maven Central and uses Prefab package format for native dependencies, which is supported by Android Gradle Plugin 4.0+.
-
-```gradle
-android {
-    buildFeatures {
-        prefab true
-    }
-}
-
-dependencies {
-    // For mini build
-    implementation 'io.github.yearsyan:ffmpeg-mini:7.1-alpha.10'
-    // Or for standard build
-    implementation 'io.github.yearsyan:ffmpeg-standard:7.1-alpha.10'
-}
-```
-
-Note: The library uses the prefab package schema v2, which is configured by default since Android Gradle Plugin 7.1.0. If you are using Android Gradle Plugin earlier than 7.1.0, please add the following configuration to gradle.properties:
-
-```properties
-android.prefabVersion=2.0.0
-```
-
-### 2. Add dependency in CMakeLists.txt or Android.mk
-
-CMakeLists.txt:
-```cmake
-find_package(ffmpeg REQUIRED CONFIG)
-
-add_library(mylib SHARED mylib.c)
-target_link_libraries(mylib ffmpeg::ffmpeg)
-```
-
-Android.mk:
-```makefile
-include $(CLEAR_VARS)
-LOCAL_MODULE           := mylib
-LOCAL_SRC_FILES        := mylib.c
-LOCAL_SHARED_LIBRARIES += ffmpeg
-include $(BUILD_SHARED_LIBRARY)
-
-$(call import-module,prefab/ffmpeg)
-```
-
-### Additional Notes
-
-- GPL version is not available on Maven Central. You can download it directly from [GitHub Releases](https://github.com/yearsyan/ffmpeg-android-build/releases).
-- If you need to customize build parameters, you can fork this repository and modify the build configuration according to your needs. 

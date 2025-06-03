@@ -42,7 +42,61 @@
 - 基本构建工具（make, tar等）
 - x86_64构建：NASM（可选，用于汇编优化）
 
+
 ## 使用方法
+
+### 1. 在 build.gradle 中添加依赖
+
+该库已发布在 Maven Central，并使用 Prefab 包格式提供原生依赖，支持 Android Gradle Plugin 4.0+。
+
+```gradle
+android {
+    buildFeatures {
+        prefab true
+    }
+}
+
+dependencies {
+    // 精简版构建
+    implementation 'io.github.yearsyan:ffmpeg-mini:7.1-beta.13'
+    // 或标准版构建
+    implementation 'io.github.yearsyan:ffmpeg-standard:7.1-beta.13'
+}
+```
+
+注意：该库使用 prefab 包模式 v2，自 Android Gradle Plugin 7.1.0 起默认配置。如果您使用的是 7.1.0 之前的 Android Gradle Plugin，请在 gradle.properties 中添加以下配置：
+
+```properties
+android.prefabVersion=2.0.0
+```
+
+### 2. 在 CMakeLists.txt 或 Android.mk 中添加依赖
+
+CMakeLists.txt:
+```cmake
+find_package(ffmpeg REQUIRED CONFIG)
+
+add_library(mylib SHARED mylib.c)
+target_link_libraries(mylib ffmpeg::ffmpeg)
+```
+
+Android.mk:
+```makefile
+include $(CLEAR_VARS)
+LOCAL_MODULE           := mylib
+LOCAL_SRC_FILES        := mylib.c
+LOCAL_SHARED_LIBRARIES += ffmpeg
+include $(BUILD_SHARED_LIBRARY)
+
+$(call import-module,prefab/ffmpeg)
+```
+
+### 补充说明
+
+- GPL 版本暂未上传至 Maven Central，您可以直接从 [GitHub Releases](https://github.com/yearsyan/ffmpeg-android-build/releases) 下载。
+- 如果您需要调整构建参数，可以 fork 本仓库并根据需要修改构建配置。 
+
+## 使用脚本
 
 ### 基本构建
 
@@ -78,56 +132,3 @@ export ANDROID_NDK=/path/to/android-ndk
 - 压缩归档文件（.tar.gz）
 
 所有架构和配置的构建产物都可以在 [Releases](https://github.com/yearsyan/ffmpeg-android-build/releases) 页面下载。每个发布版本都包含所有支持架构的标准版和精简版配置。 
-
-## 使用方法
-
-### 1. 在 build.gradle 中添加依赖
-
-该库已发布在 Maven Central，并使用 Prefab 包格式提供原生依赖，支持 Android Gradle Plugin 4.0+。
-
-```gradle
-android {
-    buildFeatures {
-        prefab true
-    }
-}
-
-dependencies {
-    // 精简版构建
-    implementation 'io.github.yearsyan:ffmpeg-mini:7.1-alpha.10'
-    // 或标准版构建
-    implementation 'io.github.yearsyan:ffmpeg-standard:7.1-alpha.10'
-}
-```
-
-注意：该库使用 prefab 包模式 v2，自 Android Gradle Plugin 7.1.0 起默认配置。如果您使用的是 7.1.0 之前的 Android Gradle Plugin，请在 gradle.properties 中添加以下配置：
-
-```properties
-android.prefabVersion=2.0.0
-```
-
-### 2. 在 CMakeLists.txt 或 Android.mk 中添加依赖
-
-CMakeLists.txt:
-```cmake
-find_package(ffmpeg REQUIRED CONFIG)
-
-add_library(mylib SHARED mylib.c)
-target_link_libraries(mylib ffmpeg::ffmpeg)
-```
-
-Android.mk:
-```makefile
-include $(CLEAR_VARS)
-LOCAL_MODULE           := mylib
-LOCAL_SRC_FILES        := mylib.c
-LOCAL_SHARED_LIBRARIES += ffmpeg
-include $(BUILD_SHARED_LIBRARY)
-
-$(call import-module,prefab/ffmpeg)
-```
-
-### 补充说明
-
-- GPL 版本暂未上传至 Maven Central，您可以直接从 [GitHub Releases](https://github.com/yearsyan/ffmpeg-android-build/releases) 下载。
-- 如果您需要调整构建参数，可以 fork 本仓库并根据需要修改构建配置。 
