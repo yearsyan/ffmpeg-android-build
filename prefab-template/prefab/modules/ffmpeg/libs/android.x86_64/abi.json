@@ -1,7 +1,0 @@
-{
-  "abi": "x86_64",
-  "api": 24,
-  "ndk": 28,
-  "stl": "none",
-  "static": false
-}

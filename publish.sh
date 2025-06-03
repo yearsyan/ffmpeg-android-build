@@ -3,6 +3,21 @@
 # Exit on error
 set -e
 
+# Parse command line arguments
+CONFIG_NAME="standard"
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --config=*)
+            CONFIG_NAME="${1#*=}"
+            shift
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+echo "Config name: $CONFIG_NAME"
+
 # Configuration
 AUTH_TOKEN="${SONATYPE_AUTH_TOKEN}"
 if [ -z "$AUTH_TOKEN" ]; then
@@ -28,7 +43,6 @@ VERSION=$(git describe --tags --abbrev=0 | sed 's/^v//')
 FILE_VERSION="$VERSION"
 
 # Get build config
-CONFIG_NAME="${CONFIG_NAME:-standard}"
 if [ "$CONFIG_NAME" = "standard" ]; then
     AAR_FILE="build/ffmpeg-${FILE_VERSION}.aar"
 else

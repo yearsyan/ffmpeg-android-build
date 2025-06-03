@@ -16,6 +16,12 @@ export PROJECT_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]:-${0}}")/.." && pwd)
 VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "1.0.0")
 VERSION=${VERSION#v} # Remove 'v' prefix if present
 
+# Extract NDK version from ANDROID_NDK path
+NDK_VERSION=$(echo $ANDROID_NDK | grep -o 'r[0-9]*' | sed 's/r//')
+if [ -z "$NDK_VERSION" ]; then
+  NDK_VERSION=28  # Default to 28 if not found
+fi
+
 # Read configuration from arguments
 export BUILD_CONFIG_NAME="standard"
 export BUILD_SUFFIX=""
@@ -31,7 +37,7 @@ for arg in "$@"; do
 done
 
 # Supported architectures
-ARCHS=("aarch64" "x86_64")
+ARCHS=("aarch64" "armv7a" "x86" "x86_64")
 
 # Architecture mapping
 declare -A ARCH_MAP
@@ -53,6 +59,17 @@ mkdir -p "$PREFAB_WORK_DIR"
 
 # Copy prefab template structure
 cp -r "$PREFAB_TEMPLATE_DIR/"* "$PREFAB_WORK_DIR/"
+
+# Create aar-metadata.properties file
+mkdir -p "$PREFAB_WORK_DIR/META-INF/com/android/build/gradle"
+cat > "$PREFAB_WORK_DIR/META-INF/com/android/build/gradle/aar-metadata.properties" << EOF
+aarFormatVersion=1.0
+aarMetadataVersion=1.0
+minCompileSdk=1
+minCompileSdkExtension=0
+minAndroidGradlePluginVersion=1.0.0
+coreLibraryDesugaringEnabled=false
+EOF
 
 # Update version in module.json
 MODULE_JSON="$PREFAB_WORK_DIR/prefab/modules/ffmpeg/module.json"
@@ -86,6 +103,17 @@ for arch in "${ARCHS[@]}"; do
   mkdir -p "$PREFAB_LIB_DIR"
   mkdir -p "$JNI_LIB_DIR"
   mkdir -p "$PREFAB_INCLUDE_DIR"
+  
+  # Generate abi.json for this architecture
+  cat > "$PREFAB_LIB_DIR/abi.json" << EOF
+{
+  "abi": "$ANDROID_ABI",
+  "api": 24,
+  "ndk": $NDK_VERSION,
+  "stl": "none",
+  "static": false
+}
+EOF
   
   # Copy shared library if exists
   if [[ -f "$FFMPEG_BUILD_DIR/lib/libffmpeg.so" ]]; then
