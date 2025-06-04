@@ -37,6 +37,7 @@ export ENABLE_AOM_DECODER=0
 export ENABLE_MP3LAME=1
 export ENABLE_X264=0
 export ENABLE_X265=0
+export ENABLE_MEDIACODEC=1
 
 # Read architecture from the script's first argument, default is aarch64
 export ARCH="aarch64"
@@ -251,6 +252,10 @@ function build_ffmpeg() {
     --disable-debug
   )
 
+  if [[ "$ENABLE_MEDIACODEC" == "1" ]]; then
+    COMMON_CFG+=(--enable-jni --enable-mediacodec)
+  fi
+
   if [[ "${ENABLE_X265:-0}" == "1" ]]; then
     COMMON_CFG+=(--extra-libs="-lm -lc++_static -lc++abi")
   fi
@@ -353,6 +358,10 @@ function build_ffmpeg() {
 
     if [[ "$enable_cxx_lib" == "1" ]]; then
       LINK_OPTS+=(-lc++_static -lc++abi)
+    fi
+
+    if [[ "$ENABLE_MEDIACODEC" == "1" ]]; then
+      LINK_OPTS+=(-landroid)
     fi
 
     # Execute compilation command
