@@ -281,6 +281,10 @@ function build_ffmpeg() {
 
   ffmpeg_config_processor COMMON_CFG
 
+  if [[ "$ENABLE_MEDIACODEC" == "1" ]]; then
+    COMMON_CFG+=(--enable-decoder=h264_mediacodec --enable-decoder=hevc_mediacodec --enable-decoder=mpeg4_mediacodec)
+  fi
+
   cd "$PROJECT_ROOT/ffmpeg"
 
   if [[ -f Makefile ]]; then
