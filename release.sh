@@ -42,5 +42,6 @@ echo "=== Creating Prefab packages ==="
 echo "=== Publishing to Maven Central ==="
 "${SCRIPT_DIR}/publish.sh" --config="mini"
 "${SCRIPT_DIR}/publish.sh" --config="standard"
+"${SCRIPT_DIR}/publish.sh" --config="tiny"
 
 echo "=== Release process completed ==="
