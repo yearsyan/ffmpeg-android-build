@@ -365,7 +365,7 @@ function build_ffmpeg() {
     fi
 
     if [[ "$ENABLE_MEDIACODEC" == "1" ]]; then
-      LINK_OPTS+=(-landroid)
+      LINK_OPTS+=(-landroid -lmediandk)
     fi
 
     # Execute compilation command
