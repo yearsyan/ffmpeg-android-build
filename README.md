@@ -30,6 +30,7 @@ A cross-compilation project for building FFmpeg for Android platforms. This proj
   - GPL build: Includes all features from standard build plus:
     - x264: H.264 encoder
     - x265: HEVC encoder
+  - Tiny build: Minimal build with only essential features:
 - Optional features:
   - Dynamic program support
   - Shared library support

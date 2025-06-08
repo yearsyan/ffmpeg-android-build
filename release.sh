@@ -36,6 +36,7 @@ echo "=== Starting release process for version: $VERSION ==="
 echo "=== Creating Prefab packages ==="
 "${SCRIPT_DIR}/builder/create_prefab.sh" --config="standard"
 "${SCRIPT_DIR}/builder/create_prefab.sh" --config="mini"
+"${SCRIPT_DIR}/builder/create_prefab.sh" --config="tiny"
 
 # Publish to Maven Central
 echo "=== Publishing to Maven Central ==="
