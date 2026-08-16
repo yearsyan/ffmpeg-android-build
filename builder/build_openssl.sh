@@ -50,8 +50,15 @@ case "$ARCH" in
 esac
 
 # OpenSSL's android targets locate the NDK through $ANDROID_NDK_ROOT and
-# expect the LLVM toolchain bin directory on PATH.
-export ANDROID_NDK_ROOT="${ANDROID_NDK_ROOT:-${ANDROID_NDK:-}}"
+# expect the LLVM toolchain bin directory on PATH. Always pin ANDROID_NDK_ROOT
+# to *this* NDK: CI images may pre-set ANDROID_NDK_ROOT to a different
+# (image-default) NDK, and OpenSSL then fails with "no NDK ...-gcc on $PATH"
+# because its clang sanity check matches against the wrong NDK path.
+if [[ -z "${ANDROID_NDK:-}" ]]; then
+  echo "Error: ANDROID_NDK is not set" >&2
+  exit 1
+fi
+export ANDROID_NDK_ROOT="${ANDROID_NDK%/}"
 export PATH="$NDK_TOOLCHAIN/bin:$PATH"
 
 OPENSSL_BUILD="$PROJECT_ROOT/$BUILD_DIR_NMAE/openssl_build_android_$TARGET_ARCH"
