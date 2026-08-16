@@ -80,7 +80,8 @@ function env_setup() {
 
   # Adjustable parameters
   export ANDROID_API_LEVEL=21                      # Minimum supported API level ≥ 21
-  export CPU_COUNT=$(sysctl -n hw.ncpu 2>/dev/null || nproc)
+  # Allow capping build parallelism, e.g. CPU_COUNT=16 ./build_ffmpeg.sh ...
+  export CPU_COUNT="${CPU_COUNT:-$(sysctl -n hw.ncpu 2>/dev/null || nproc)}"
 
   # Set FFmpeg configure's --arch, --cpu, and NDK triple according to ARCH
   case "$ARCH" in
@@ -179,7 +180,15 @@ function env_setup() {
 
 function build_and_install_deps() {
   if [[ $ENABLE_DAV1D == 1 ]]; then
-    #build aom
+    echo "Start build dav1d"
+    export DAV1D_PREFIX=$DEPS_INSTALL
+    bash "$SCRIPT_DIR/build_dav1d.sh" >> "$LOG_FILE" 2>> "$ERROR_LOG_FILE" || {
+      echo "DAV1D build failed. Check $ERROR_LOG_FILE for details."
+      exit 1
+    }
+  fi
+
+  if [[ $ENABLE_AOM_ENCODER == 1 || $ENABLE_AOM_DECODER == 1 ]]; then
     echo "Start build aom"
     export AOM_INSTALL=$DEPS_INSTALL
     bash "$SCRIPT_DIR/build_aom.sh" >> "$LOG_FILE" 2>> "$ERROR_LOG_FILE" || {
@@ -193,15 +202,6 @@ function build_and_install_deps() {
     export LAME_PREFIX=$DEPS_INSTALL
     bash "$SCRIPT_DIR/build_lame.sh" >> "$LOG_FILE" 2>> "$ERROR_LOG_FILE" || {
       echo "LAME build failed. Check $ERROR_LOG_FILE for details."
-      exit 1
-    }
-  fi
-
-  if [[ $ENABLE_AOM_ENCODER == 1 || $ENABLE_AOM_DECODER ]]; then
-    echo "Start build dav1d"
-    export DAV1D_PREFIX=$DEPS_INSTALL
-    bash "$SCRIPT_DIR/build_dav1d.sh" >> "$LOG_FILE" 2>> "$ERROR_LOG_FILE" || {
-      echo "DAV1D build failed. Check $ERROR_LOG_FILE for details."
       exit 1
     }
   fi
