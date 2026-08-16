@@ -62,6 +62,12 @@ function ffmpeg_config_processor() {
     )
   fi
 
+  if [[ "${ENABLE_OPENSSL:-0}" == "1" ]]; then
+    env_configs+=(
+      --enable-openssl
+    )
+  fi
+
   # Add configurations from EXTRA_BUILD_CFG first
   base_config+=("${EXTRA_BUILD_CFG[@]}")
 

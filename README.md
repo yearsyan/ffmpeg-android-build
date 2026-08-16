@@ -18,6 +18,8 @@ A cross-compilation project for building FFmpeg for Android platforms. This proj
       - dav1d: High-performance AV1 decoder
       - aom: AV1 encoder/decoder
       - mp3lame: High-quality MP3 encoder
+    - Network/TLS support:
+      - openssl (shared): https://, tls:// and other TLS-based protocols
   - Mini build: Optimized for common use cases with essential codecs and formats:
     - Video codecs: H.264, HEVC, VP8, VP9, AV1 (via dav1d)
     - Audio codecs: AAC, AC3, MP3 (via mp3lame), Opus, FLAC

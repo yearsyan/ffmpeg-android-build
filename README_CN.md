@@ -18,6 +18,8 @@
       - dav1d：高性能AV1解码器
       - aom：AV1编码器/解码器
       - mp3lame：高质量MP3编码器
+    - 网络/TLS 支持：
+      - openssl（动态库）：支持 https://、tls:// 等基于 TLS 的协议
   - 精简构建(mini)：针对常见使用场景优化，包含必要的编解码器和格式：
     - 视频编解码器：H.264、HEVC、VP8、VP9、AV1（通过dav1d）
     - 音频编解码器：AAC、AC3、MP3（通过mp3lame）、Opus、FLAC

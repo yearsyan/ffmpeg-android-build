@@ -129,6 +129,17 @@ EOF
     cp "$FFMPEG_BUILD_DIR/bin/ffmpeg-dynamic" "$JNI_LIB_DIR/libffmpegexe.so"
     echo "  Copied ffmpegexe for $ANDROID_ABI"
   fi
+
+  # Bundle OpenSSL shared libraries (https/TLS support) when they were built.
+  # They land in jni/<abi>/ so AGP packages them into the consuming app, and
+  # the dynamic linker resolves them as dependencies of libffmpeg.so.
+  DEPS_DIR="$BUILD_DIST/ffmpeg_android_dep_${TARGET_ARCH}"
+  for ssl_lib in "$DEPS_DIR/lib"/libssl.so* "$DEPS_DIR/lib"/libcrypto.so*; do
+    if [[ -f "$ssl_lib" ]]; then
+      cp "$ssl_lib" "$JNI_LIB_DIR/"
+      echo "  Copied $(basename "$ssl_lib") for $ANDROID_ABI"
+    fi
+  done
   
   # Copy headers to architecture-specific include directory
   if [[ -d "$FFMPEG_BUILD_DIR/include" ]]; then

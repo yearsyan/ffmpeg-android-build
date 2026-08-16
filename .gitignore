@@ -13,3 +13,6 @@ local.properties
 .idea/
 *.iml
 .vscode/
+
+# OpenSSL source (downloaded on demand by builder/build_openssl.sh)
+openssl/
