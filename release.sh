@@ -37,11 +37,13 @@ echo "=== Creating Prefab packages ==="
 "${SCRIPT_DIR}/builder/create_prefab.sh" --config="standard"
 "${SCRIPT_DIR}/builder/create_prefab.sh" --config="mini"
 "${SCRIPT_DIR}/builder/create_prefab.sh" --config="tiny"
+"${SCRIPT_DIR}/builder/create_prefab.sh" --config="ssl"
 
 # Publish to Maven Central
 echo "=== Publishing to Maven Central ==="
 "${SCRIPT_DIR}/publish.sh" --config="mini"
 "${SCRIPT_DIR}/publish.sh" --config="standard"
 "${SCRIPT_DIR}/publish.sh" --config="tiny"
+"${SCRIPT_DIR}/publish.sh" --config="ssl"
 
 echo "=== Release process completed ==="

@@ -53,6 +53,11 @@ PREFAB_TEMPLATE_DIR="$PROJECT_ROOT/prefab-template"
 
 echo "=== Creating Prefab package for config: $BUILD_CONFIG_NAME (version: $VERSION) ==="
 
+# Load the matching build configuration (for feature flags such as
+# ENABLE_OPENSSL that affect packaging).
+# shellcheck disable=SC1090
+source "$PROJECT_ROOT/config/${BUILD_CONFIG_NAME}_config.sh"
+
 # Clean and create working directory
 rm -rf "$PREFAB_WORK_DIR"
 mkdir -p "$PREFAB_WORK_DIR"
@@ -133,13 +138,17 @@ EOF
   # Bundle OpenSSL shared libraries (https/TLS support) when they were built.
   # They land in jni/<abi>/ so AGP packages them into the consuming app, and
   # the dynamic linker resolves them as dependencies of libffmpeg.so.
-  DEPS_DIR="$BUILD_DIST/ffmpeg_android_dep_${TARGET_ARCH}"
-  for ssl_lib in "$DEPS_DIR/lib"/libssl.so* "$DEPS_DIR/lib"/libcrypto.so*; do
-    if [[ -f "$ssl_lib" ]]; then
-      cp "$ssl_lib" "$JNI_LIB_DIR/"
-      echo "  Copied $(basename "$ssl_lib") for $ANDROID_ABI"
-    fi
-  done
+  # Only configs that enable OpenSSL ship these (the deps dir is shared
+  # between configs, so key off the config rather than file presence).
+  if [[ "${ENABLE_OPENSSL:-0}" == "1" ]]; then
+    DEPS_DIR="$BUILD_DIST/ffmpeg_android_dep_${TARGET_ARCH}"
+    for ssl_lib in "$DEPS_DIR/lib"/libssl.so* "$DEPS_DIR/lib"/libcrypto.so*; do
+      if [[ -f "$ssl_lib" ]]; then
+        cp "$ssl_lib" "$JNI_LIB_DIR/"
+        echo "  Copied $(basename "$ssl_lib") for $ANDROID_ABI"
+      fi
+    done
+  fi
   
   # Copy headers to architecture-specific include directory
   if [[ -d "$FFMPEG_BUILD_DIR/include" ]]; then

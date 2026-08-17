@@ -18,8 +18,8 @@ A cross-compilation project for building FFmpeg for Android platforms. This proj
       - dav1d: High-performance AV1 decoder
       - aom: AV1 encoder/decoder
       - mp3lame: High-quality MP3 encoder
-    - Network/TLS support:
-      - openssl (shared): https://, tls:// and other TLS-based protocols
+  - SSL build: Includes all features from standard build plus:
+    - openssl (shared): TLS support for https://, tls:// and other TLS-based protocols
   - Mini build: Optimized for common use cases with essential codecs and formats:
     - Video codecs: H.264, HEVC, VP8, VP9, AV1 (via dav1d)
     - Audio codecs: AAC, AC3, MP3 (via mp3lame), Opus, FLAC
@@ -60,9 +60,11 @@ android {
 
 dependencies {
     // For mini build
-    implementation 'io.github.yearsyan:ffmpeg-mini:7.1-beta.13'
+    implementation 'io.github.yearsyan:ffmpeg-mini:7.1.5-r2'
     // Or for standard build
-    implementation 'io.github.yearsyan:ffmpeg-standard:7.1-beta.13'
+    implementation 'io.github.yearsyan:ffmpeg-standard:7.1.5-r2'
+    // Or for ssl build (standard + https/TLS via OpenSSL)
+    implementation 'io.github.yearsyan:ffmpeg-ssl:7.1.5-r2'
 }
 ```
 

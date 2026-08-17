@@ -35,6 +35,7 @@ for arch in "${ARCHS[@]}"; do
   "${SCRIPT_DIR}/build_ffmpeg.sh" "${BUILD_ARGS[@]}" --arch="${arch}" --config="mini"
   "${SCRIPT_DIR}/build_ffmpeg.sh" "${BUILD_ARGS[@]}" --arch="${arch}" --config="gpl"
   "${SCRIPT_DIR}/build_ffmpeg.sh" "${BUILD_ARGS[@]}" --arch="${arch}" --config="tiny"
+  "${SCRIPT_DIR}/build_ffmpeg.sh" "${BUILD_ARGS[@]}" --arch="${arch}" --config="ssl"
 done
 
 echo "=== All architectures built successfully ==="
@@ -45,4 +46,5 @@ echo "=== Creating Prefab packages ==="
 "${SCRIPT_DIR}/create_prefab.sh" --config="mini"
 "${SCRIPT_DIR}/create_prefab.sh" --config="gpl"
 "${SCRIPT_DIR}/create_prefab.sh" --config="tiny"
+"${SCRIPT_DIR}/create_prefab.sh" --config="ssl"
 echo "=== Build and packaging completed ==="
