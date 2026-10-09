@@ -19,7 +19,14 @@ nasm_main() {
     *) return 0 ;;
   esac
 
-  if timeout 15 nasm -v >/dev/null 2>&1; then
+  # GNU timeout is unavailable on stock macOS; probe directly then.
+  local probe_ok=0
+  if command -v timeout >/dev/null 2>&1; then
+    timeout 15 nasm -v >/dev/null 2>&1 && probe_ok=1
+  else
+    nasm -v >/dev/null 2>&1 && probe_ok=1
+  fi
+  if [[ "$probe_ok" == "1" ]]; then
     echo "Using system nasm: $(command -v nasm) ($(nasm -v))"
     return 0
   fi
@@ -53,7 +60,11 @@ nasm_main() {
       curl -fL --retry 3 -o "$tmp_dir/$tarball" \
         "https://www.nasm.us/pub/nasm/releasebuilds/${NASM_VERSION}/$tarball"
       tar xJf "$tmp_dir/$tarball" -C "$tmp_dir"
-      (cd "$tmp_dir/nasm-${NASM_VERSION}" && ./configure --prefix="$tmp_dir/install" >/dev/null && make -j"$(nproc)" >/dev/null)
+      # Host tool: must build with the host compiler, not the exported
+      # Android cross $CC from build_ffmpeg.sh.
+      (cd "$tmp_dir/nasm-${NASM_VERSION}" \
+        && CC=cc ./configure --prefix="$tmp_dir/install" >/dev/null \
+        && make CC=cc -j"$(sysctl -n hw.ncpu 2>/dev/null || nproc)" >/dev/null)
       cp "$tmp_dir/nasm-${NASM_VERSION}/nasm" "$bin_dir/nasm"
       chmod +x "$bin_dir/nasm"
     fi

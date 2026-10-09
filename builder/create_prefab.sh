@@ -79,7 +79,9 @@ EOF
 # Update version in module.json
 MODULE_JSON="$PREFAB_WORK_DIR/prefab/modules/ffmpeg/module.json"
 if [[ -f "$MODULE_JSON" ]]; then
-  sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" "$MODULE_JSON"
+  # sed -i.bak is portable across GNU and BSD (macOS) sed.
+  sed -i.bak "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" "$MODULE_JSON"
+  rm -f "$MODULE_JSON.bak"
 fi
 
 # Process each architecture

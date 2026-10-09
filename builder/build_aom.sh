@@ -33,6 +33,9 @@ CMAKE_ARGS=(
   "-DCONFIG_RUNTIME_CPU_DETECT=0"
   "-DCMAKE_C_FLAGS=-ffunction-sections -fdata-sections"
   "-DCONFIG_INSPECTION=0"
+  # Prefer nasm (bootstrapped by setup_nasm.sh): the yasm bundled in the NDK
+  # prebuilt dir is an x86_64-only binary and cannot run on Apple Silicon.
+  "-DENABLE_NASM=ON"
   "-DCMAKE_EXE_LINKER_FLAGS=-Wl,--gc-sections"
   "-DCMAKE_SHARED_LINKER_FLAGS=-Wl,--gc-sections"
   "-DCMAKE_C_FLAGS_RELEASE=-Os -DNDEBUG"
@@ -44,6 +47,19 @@ if [[ $TARGET_CPU != "x86-64" ]]; then
   CMAKE_ARGS+=(
     "-DAOM_TARGET_CPU=$TARGET_CPU"
   )
+fi
+
+# The NDK legacy toolchain file hardcodes CMAKE_ASM_NASM_COMPILER to the yasm
+# bundled with the NDK for x86 ABIs. That yasm is an x86_64-only binary and
+# fails on Apple Silicon hosts without Rosetta ("Bad CPU type in executable"),
+# and aom's ENABLE_NASM cannot override it: find_program() skips the search
+# when the variable is already set. When a host nasm was bootstrapped, force
+# it after the toolchain runs via CMAKE_PROJECT_INCLUDE.
+if [[ -x "$PROJECT_ROOT/tools/bin/nasm" ]]; then
+  cat > "$AOM_BUILD/asm_nasm_override.cmake" <<EOF
+set(CMAKE_ASM_NASM_COMPILER "$PROJECT_ROOT/tools/bin/nasm")
+EOF
+  CMAKE_ARGS+=("-DCMAKE_PROJECT_INCLUDE=$AOM_BUILD/asm_nasm_override.cmake")
 fi
 
 

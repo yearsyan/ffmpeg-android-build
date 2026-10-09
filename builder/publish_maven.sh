@@ -72,12 +72,14 @@ unzip -q "$AAR_FILE" -d ffmpeg-android/
 cp "$PROJECT_ROOT/prefab/ffmpeg/build.gradle" ffmpeg-android/
 cp "$PROJECT_ROOT/prefab/ffmpeg/gradle.properties" ffmpeg-android/
 
-# Update version in build.gradle
-sed -i "s/PUBLISH_VERSION = '1.0.0'/PUBLISH_VERSION = '$PUBLISH_VERSION'/g" ffmpeg-android/build.gradle
+# Update version in build.gradle (sed -i.bak is portable across GNU and BSD sed)
+sed -i.bak "s/PUBLISH_VERSION = '1.0.0'/PUBLISH_VERSION = '$PUBLISH_VERSION'/g" ffmpeg-android/build.gradle
+rm -f ffmpeg-android/build.gradle.bak
 
 # Update artifact ID based on configuration
 if [[ "$BUILD_CONFIG_NAME" != "standard" ]]; then
-  sed -i "s/PUBLISH_ARTIFACT_ID = 'ffmpeg-android'/PUBLISH_ARTIFACT_ID = 'ffmpeg-android-$BUILD_CONFIG_NAME'/g" ffmpeg-android/build.gradle
+  sed -i.bak "s/PUBLISH_ARTIFACT_ID = 'ffmpeg-android'/PUBLISH_ARTIFACT_ID = 'ffmpeg-android-$BUILD_CONFIG_NAME'/g" ffmpeg-android/build.gradle
+  rm -f ffmpeg-android/build.gradle.bak
 fi
 
 # Create settings.gradle

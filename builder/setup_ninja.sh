@@ -15,7 +15,12 @@ set -e
 
 ninja_works() {
   # $1 = candidate command/path; must answer --version quickly.
-  timeout 15 "$1" --version >/dev/null 2>&1
+  # GNU timeout is unavailable on stock macOS; probe directly then.
+  if command -v timeout >/dev/null 2>&1; then
+    timeout 15 "$1" --version >/dev/null 2>&1
+  else
+    "$1" --version >/dev/null 2>&1
+  fi
 }
 
 ninja_main() {

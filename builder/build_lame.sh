@@ -24,5 +24,5 @@ fi
   --disable-frontend \
   --prefix=$PREFIX
 
-make -j$(nproc)
+make -j"$(sysctl -n hw.ncpu 2>/dev/null || nproc)"
 make install
